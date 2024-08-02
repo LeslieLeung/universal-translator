@@ -1,11 +1,12 @@
 # Universal Translator
 
-Agentic translation using reflection workflow, refactored and suggared.
+Agentic translation using reflection workflow, refactored and sugared.
 
 ## Features
 
 - Agentic translation w/ reflection workflow, as purposed in [translation-agent](https://github.com/andrewyng/translation-agent)
-- Refactored and suggared for better readability and maintainability
+- Refactored for better readability and maintainability
+- Sugared interface for easy usage
 - Support for glossary, and additional instructions for translation
 - Support for other LLMs(coming soon)
 
@@ -52,4 +53,4 @@ translated_text = translator.translate(text)
 
 ## Credits
 
-Inspired by [translation-agent](https://github.com/andrewyng/translation-agent). It's core code is crammed in a `utils.py` that is hard to read and maintain. This project refactors and suggars the code for better readability and maintainability. Also, it adds support for glossary, additional instructions, and other LLMs.
+Inspired by [translation-agent](https://github.com/andrewyng/translation-agent). The core code of this project is refactored from a cramped utils.py to improve readability and maintainability. Additionally, it adds support for glossaries, additional instructions, and future support for other LLMs.
