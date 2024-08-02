@@ -36,12 +36,12 @@ python examples/translate.py
 
 ```python
 from universal_translator.llm.openai import OpenAI
-from universal_translator.translate.translation import AITranslator
+from universal_translator.translate.translation import UniversalTranslator
 
 # initilize the LLM provider
 provider = OpenAI(api_key=openai_api_key, model="gpt-4o")
 # initialize the translator
-translator = AITranslator(
+translator = UniversalTranslator(
     source_language="en", # or English
     target_language="fr", # or French
     llm_provider=provider,

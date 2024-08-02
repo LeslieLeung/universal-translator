@@ -12,7 +12,7 @@ from universal_translator.translate.prompt import (
 )
 
 
-class AITranslator:
+class UniversalTranslator:
     def __init__(self, source_language: str, target_language: str, llm_provider: LLMProvider, **kwargs):
         self.source_language: str = source_language
         self.target_language: str = target_language

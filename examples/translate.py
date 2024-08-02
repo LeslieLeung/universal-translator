@@ -3,7 +3,7 @@ import os
 from dotenv import load_dotenv
 
 from universal_translator.llm.openai import OpenAI
-from universal_translator.translate.translation import AITranslator
+from universal_translator.translate.translation import UniversalTranslator
 
 if __name__ == "__main__":
     load_dotenv()
@@ -12,7 +12,7 @@ if __name__ == "__main__":
     # initilize the LLM provider
     provider = OpenAI(api_key=openai_api_key, model="gpt-4o")
     # initialize the translator
-    translator = AITranslator(
+    translator = UniversalTranslator(
         source_language="en",
         target_language="fr",
         llm_provider=provider,
