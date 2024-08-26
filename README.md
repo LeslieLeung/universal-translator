@@ -8,7 +8,7 @@ Agentic translation using reflection workflow, refactored and sugared.
 - Refactored for better readability and maintainability
 - Sugared interface for easy usage
 - Support for glossary, and additional instructions for translation
-- Support for other LLMs(coming soon)
+- Support for other LLMs(OpenAI, Anthropic, Anthropic Bedrock, more to come)
 
 ## Quick Start
 
