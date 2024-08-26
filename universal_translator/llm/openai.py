@@ -1,10 +1,10 @@
-from typing import List
+from typing import List, Union
 
 import openai
 import tiktoken
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
-from universal_translator.llm.base import LLMProvider
+from universal_translator.llm.base import LLMProvider, Usage
 
 
 class OpenAI(LLMProvider):
@@ -13,6 +13,7 @@ class OpenAI(LLMProvider):
         self.model = kwargs.get("model", "gpt-4o")
         self.temperature = kwargs.get("temperature", 0.3)
         self.client = openai.OpenAI(api_key=api_key)
+        self.usage: Union[openai.types.CompletionUsage, None] = None
 
     def num_tokens_in_string(self, input_str: str) -> int:
         """
@@ -66,4 +67,17 @@ class OpenAI(LLMProvider):
                 {"role": "user", "content": prompt},
             ],
         )
-        return response.choices[0].message.content
+
+        self.usage = response.usage
+        return response.choices[0].message.content  # type: ignore
+
+    def get_last_usage(self) -> Usage:
+        return (
+            Usage(
+                total_tokens=self.usage.total_tokens,
+                prompt_tokens=self.usage.prompt_tokens,
+                completion_tokens=self.usage.completion_tokens,
+            )
+            if self.usage
+            else Usage(0, 0, 0)
+        )

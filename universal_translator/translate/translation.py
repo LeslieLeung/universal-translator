@@ -1,6 +1,6 @@
 from typing import Callable, Dict, List
 
-from universal_translator.llm.base import LLMProvider
+from universal_translator.llm.base import LLMProvider, Usage
 from universal_translator.translate.glossary import format_glossary
 from universal_translator.translate.prompt import (
     PROMPT_IMPROVE_TRANSLATION,
@@ -12,13 +12,14 @@ from universal_translator.translate.prompt import (
 )
 
 
-class UniversalTranslator:
+class AITranslator:
     def __init__(self, source_language: str, target_language: str, llm_provider: LLMProvider, **kwargs):
         self.source_language: str = source_language
         self.target_language: str = target_language
         self.country: str = kwargs.get("country", "")
         self.glossary: List[Dict[str, str]] = kwargs.get("glossary", [])
         self.extra_instructions: str = kwargs.get("extra_instructions", "")
+        self.usage: Dict[str, Usage] = {}
         self.llm_provider: LLMProvider = llm_provider
 
     def translate(self, text: str, post_processing: List[Callable] = []) -> str:
@@ -36,6 +37,14 @@ class UniversalTranslator:
         for post_process in post_processing:
             translated_text = post_process(translated_text)  # type: ignore
         return translated_text
+
+    def _count_usage(self) -> None:
+        usage = self.llm_provider.get_last_usage()
+        if usage is None:
+            return
+        if self.llm_provider.model not in self.usage:
+            self.usage[self.llm_provider.model] = usage
+        self.usage[self.llm_provider.model].add(usage)
 
     def _get_tagged_text(self, source_text_chunks, i):
         tagged_text = (
@@ -65,6 +74,8 @@ class UniversalTranslator:
 
             translation = self.llm_provider.get_completion(prompt, PROMPT_INITIAL_TRANSLATION_SYSTEM)
             translated_chunks.append(translation)
+            # count usage
+            self._count_usage()
 
         return translated_chunks
 
@@ -81,10 +92,12 @@ class UniversalTranslator:
                 chunk_to_translate=source_text_chunks[i],
                 translation_1_chunk=translated_chunks[i],
                 glossary=format_glossary(self.glossary),
+                extra_instructions=self.extra_instructions,
             )
 
             reflection = self.llm_provider.get_completion(prompt, PROMPT_REFLECT_ON_TRANSLATION_SYSTEM)
             reflection_chunks.append(reflection)
+            self._count_usage()
 
         return reflection_chunks
 
@@ -107,9 +120,11 @@ class UniversalTranslator:
                 translation_1_chunk=translated_chunks[i],
                 reflection_chunk=reflection_chunks[i],
                 glossary=format_glossary(self.glossary),
+                extra_instructions=self.extra_instructions,
             )
 
             improved = self.llm_provider.get_completion(prompt, PROMPT_IMPROVE_TRANSLATION_SYSTEM)
             improved_translation.append(improved)
+            self._count_usage()
 
         return improved_translation
