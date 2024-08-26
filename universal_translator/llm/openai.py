@@ -1,4 +1,4 @@
-from typing import List, Union
+from typing import List
 
 import openai
 import tiktoken
@@ -13,7 +13,7 @@ class OpenAI(LLMProvider):
         self.model = kwargs.get("model", "gpt-4o")
         self.temperature = kwargs.get("temperature", 0.3)
         self.client = openai.OpenAI(api_key=api_key)
-        self.usage: Union[openai.types.CompletionUsage, None] = None
+        self.usage: Usage = Usage(total_tokens=0, prompt_tokens=0, completion_tokens=0)
 
     def num_tokens_in_string(self, input_str: str) -> int:
         """
@@ -72,12 +72,8 @@ class OpenAI(LLMProvider):
         return response.choices[0].message.content  # type: ignore
 
     def get_last_usage(self) -> Usage:
-        return (
-            Usage(
-                total_tokens=self.usage.total_tokens,
-                prompt_tokens=self.usage.prompt_tokens,
-                completion_tokens=self.usage.completion_tokens,
-            )
-            if self.usage
-            else Usage(0, 0, 0)
+        return Usage(
+            total_tokens=self.usage.total_tokens,
+            prompt_tokens=self.usage.prompt_tokens,
+            completion_tokens=self.usage.completion_tokens,
         )
