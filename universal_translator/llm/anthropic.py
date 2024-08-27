@@ -1,8 +1,7 @@
-from typing import List
+from typing import List, Tuple
 
 import tiktoken
-from anthropic import Anthropic
-from anthropic.types.usage import Usage
+from anthropic import Anthropic as AnthropicClient
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 from universal_translator.llm.base import LLMProvider, Usage
@@ -10,12 +9,11 @@ from universal_translator.llm.base import LLMProvider, Usage
 
 class Anthropic(LLMProvider):
     def __init__(self, **kwargs):
-        self.model = kwargs.get("model", "claude-3-5-sonnet-20240620-v1:0")
+        self.model = kwargs.get("model", "claude-3-5-sonnet-20240620")
         self.temperature = kwargs.get("temperature", 0.3)
-        self.client = Anthropic(
+        self.client = AnthropicClient(
             api_key=kwargs.get("api_key"),
         )
-        self.usage: Usage = Usage(total_tokens=0, prompt_tokens=0, completion_tokens=0)
 
     def num_tokens_in_string(self, input_str: str) -> int:
         """
@@ -45,7 +43,7 @@ class Anthropic(LLMProvider):
         prompt: str,
         system_message: str = "You are a helpful assistant.",
         **kwargs,
-    ) -> str:
+    ) -> Tuple[str, Usage]:
         model = kwargs.get("model", self.model)
         temperature = kwargs.get("temperature", self.temperature)
 
@@ -64,13 +62,10 @@ class Anthropic(LLMProvider):
         )
 
         # calculate usage
-        self.usage = completion.usage
-
-        return completion.content[0].text  # type: ignore
-
-    def get_last_usage(self):
-        return Usage(
-            total_tokens=self.usage.input_tokens + self.usage.output_tokens,
-            prompt_tokens=self.usage.input_tokens,
-            completion_tokens=self.usage.output_tokens,
+        usage = Usage(
+            total_tokens=completion.usage.input_tokens + completion.usage.output_tokens,
+            prompt_tokens=completion.usage.input_tokens,
+            completion_tokens=completion.usage.output_tokens,
         )
+
+        return completion.content[0].text, usage  # type: ignore

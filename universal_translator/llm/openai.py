@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Tuple
 
 import openai
 import tiktoken
@@ -13,7 +13,6 @@ class OpenAI(LLMProvider):
         self.model = kwargs.get("model", "gpt-4o")
         self.temperature = kwargs.get("temperature", 0.3)
         self.client = openai.OpenAI(api_key=api_key)
-        self.usage: Usage = Usage(total_tokens=0, prompt_tokens=0, completion_tokens=0)
 
     def num_tokens_in_string(self, input_str: str) -> int:
         """
@@ -52,7 +51,7 @@ class OpenAI(LLMProvider):
         prompt: str,
         system_message: str = "You are a helpful assistant.",
         **kwargs,
-    ) -> str:
+    ) -> Tuple[str, Usage]:
         # If model and temperature are not provided, use the default values
         model = kwargs.get("model", self.model)
         temperature = kwargs.get("temperature", self.temperature)
@@ -68,12 +67,9 @@ class OpenAI(LLMProvider):
             ],
         )
 
-        self.usage = response.usage
-        return response.choices[0].message.content  # type: ignore
-
-    def get_last_usage(self) -> Usage:
-        return Usage(
-            total_tokens=self.usage.total_tokens,
-            prompt_tokens=self.usage.prompt_tokens,
-            completion_tokens=self.usage.completion_tokens,
+        usage = Usage(
+            total_tokens=response.usage.total_tokens,
+            prompt_tokens=response.usage.prompt_tokens,
+            completion_tokens=response.usage.completion_tokens,
         )
+        return response.choices[0].message.content, usage  # type: ignore

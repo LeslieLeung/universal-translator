@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Tuple
 
 import tiktoken
 from anthropic import AnthropicBedrock as AnthropicBedrockClient
@@ -18,7 +18,6 @@ class AnthropicBedrock(LLMProvider):
             aws_access_key=access_key,
             aws_secret_key=secret_access_key,
         )
-        self.usage: Usage = Usage(total_tokens=0, prompt_tokens=0, completion_tokens=0)
 
     def num_tokens_in_string(self, input_str: str) -> int:
         """
@@ -48,7 +47,7 @@ class AnthropicBedrock(LLMProvider):
         prompt: str,
         system_message: str = "You are a helpful assistant.",
         **kwargs,
-    ) -> str:
+    ) -> Tuple[str, Usage]:
         model = kwargs.get("model", self.model)
         temperature = kwargs.get("temperature", self.temperature)
 
@@ -67,13 +66,10 @@ class AnthropicBedrock(LLMProvider):
         )
 
         # calculate usage
-        self.usage = completion.usage
-
-        return completion.content[0].text  # type: ignore
-
-    def get_last_usage(self):
-        return Usage(
-            total_tokens=self.usage.input_tokens + self.usage.output_tokens,
-            prompt_tokens=self.usage.input_tokens,
-            completion_tokens=self.usage.output_tokens,
+        usage = Usage(
+            total_tokens=completion.usage.input_tokens + completion.usage.output_tokens,
+            prompt_tokens=completion.usage.input_tokens,
+            completion_tokens=completion.usage.output_tokens,
         )
+
+        return completion.content[0].text, usage  # type: ignore

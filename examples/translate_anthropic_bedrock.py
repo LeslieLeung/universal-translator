@@ -1,16 +1,22 @@
 import os
+import time
 
 from dotenv import load_dotenv
 
-from universal_translator.llm.openai import OpenAI
+from universal_translator.llm.anthropic_bedrock import AnthropicBedrock
 from universal_translator.translate.translation import UniversalTranslator
 
 if __name__ == "__main__":
     load_dotenv()
-    openai_api_key = os.getenv("OPENAI_API_KEY") or exit("No OpenAI API key found")
+    aws_access_key_id = os.getenv("AWS_ACCESS_KEY_ID") or exit("No AWS access key id found")
+    aws_secret_access_key = os.getenv("AWS_SECRET_ACCESS_KEY") or exit("No AWS secret access key found")
 
     # initilize the LLM provider
-    provider = OpenAI(api_key=openai_api_key, model="gpt-4o")
+    provider = AnthropicBedrock(
+        access_key=aws_access_key_id,
+        secret_access_key=aws_secret_access_key,
+        model="anthropic.claude-3-5-sonnet-20240620-v1:0",
+    )
     # initialize the translator
     translator = UniversalTranslator(
         source_language="en",
@@ -29,5 +35,9 @@ if __name__ == "__main__":
     print("--------------------------------------------------\n")
 
     # translate the text
+    start_time = time.time()
     translated_text = translator.translate(text)
+    end_time = time.time()
+    print(f"Time taken: {end_time - start_time} seconds")
+    print(f"Usage: {translator.usage}")
     print(f"Translated text: {translated_text}")
