@@ -7,12 +7,11 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 from universal_translator.llm.base import LLMProvider, Usage
 
 
-class OpenAI(LLMProvider):
-    def __init__(self, api_key: str, **kwargs):
-        self.api_key = api_key
-        self.model = kwargs.get("model", "gpt-4o")
+class OpenAICompatible(LLMProvider):
+    def __init__(self, client: openai.OpenAI, **kwargs):
+        self.client = client
+        self.model = kwargs.get("model", "")
         self.temperature = kwargs.get("temperature", 0.3)
-        self.client = openai.OpenAI(api_key=api_key)
 
     def num_tokens_in_string(self, input_str: str) -> int:
         """
@@ -75,3 +74,10 @@ class OpenAI(LLMProvider):
             completion_tokens=response.usage.completion_tokens,
         )
         return response.choices[0].message.content, usage  # type: ignore
+
+
+class OpenAI(OpenAICompatible):
+    def __init__(self, api_key: str, **kwargs):
+        client = openai.OpenAI(api_key=api_key)
+        super().__init__(client, **kwargs)
+        self.model = kwargs.get("model", "gpt-4o")
