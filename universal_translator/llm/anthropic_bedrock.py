@@ -2,7 +2,6 @@ from typing import List, Tuple
 
 import tiktoken
 from anthropic import AnthropicBedrock as AnthropicBedrockClient
-from anthropic.types.usage import Usage
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 from universal_translator.llm.base import LLMProvider, Usage

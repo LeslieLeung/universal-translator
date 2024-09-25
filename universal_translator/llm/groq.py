@@ -7,12 +7,12 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 from universal_translator.llm.base import LLMProvider, Usage
 
 
-class OpenAI(LLMProvider):
+class Groq(LLMProvider):
     def __init__(self, api_key: str, **kwargs):
         self.api_key = api_key
-        self.model = kwargs.get("model", "gpt-4o")
+        self.model = kwargs.get("model", "llama3-70b-8192")
         self.temperature = kwargs.get("temperature", 0.3)
-        self.client = openai.OpenAI(api_key=api_key)
+        self.client = openai.OpenAI(base_url="https://api.groq.com/openai/v1", api_key=api_key)
 
     def num_tokens_in_string(self, input_str: str) -> int:
         """
